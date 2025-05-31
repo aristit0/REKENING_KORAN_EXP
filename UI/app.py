@@ -6,7 +6,7 @@ import phoenixdb.cursor
 from datetime import datetime
 
 # Set project base directory
-BASE_DIR = "/home/cdsw/phoenix-flask-app"
+BASE_DIR = "/home/cdsw/UI"
 
 # Create Flask app with correct template/static folder references
 app = Flask(
