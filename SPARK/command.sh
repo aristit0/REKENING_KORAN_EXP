@@ -1,0 +1,1 @@
+spark3-submit   --master yarn   --deploy-mode cluster   --jars /home/nifi/phoenix5-spark3-shaded-6.0.0.3.3.7190.0-91.jar,/home/nifi/pqs719.jar   /home/nifi/rk.py 123701007794509 20250421 20250421

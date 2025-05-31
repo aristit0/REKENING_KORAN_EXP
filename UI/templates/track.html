@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Document Request</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f7f9fc;
+        }
+
+        h2 {
+            color: #2c3e50;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .back {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .back:hover {
+            background-color: #1a242f;
+        }
+
+        .download-link {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Document Request Status</h2>
+
+    {% if results and results[0][0] == 'Error' %}
+        <p style="color: red; font-weight: bold;">{{ results[0][1] }}</p>
+    {% elif results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Requestor (NIP)</th>
+                    <th>Account Number</th>
+                    <th>Date Range</th>
+                    <th>Document Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }} - {{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% for row in results %}
+            {% if row[5] == 'COMPLETED' and row[6] %}
+                <h3 style="margin-top: 30px;">Download</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Download Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td><a class="download-link" href="{{ row[6] }}" target="_blank">Download PDF</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            {% endif %}
+        {% endfor %}
+
+    {% else %}
+        <p>No job found with that ID.</p>
+    {% endif %}
+
+    <a class="back" href="/">← Back to Request Form</a>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document Request Form</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f7f9fc;
+        }
+
+        h2 {
+            color: #2c3e50;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: block;
+        }
+
+        button {
+            padding: 10px 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .message {
+            color: green;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Request Transaction Document</h2>
+
+    <form method="POST" action="/">
+        <input type="text" name="nip" placeholder="NIP" required>
+        <input type="text" name="acctno" placeholder="Account Number" required>
+        <input type="text" name="start_date" placeholder="Start Date (YYYYMMDD)" required>
+        <input type="text" name="end_date" placeholder="End Date (YYYYMMDD)" required>
+
+        <button type="submit">Submit Request</button>
+        <a href="/track"><button type="button">Track Document</button></a>
+    </form>
+
+    {% if message %}
+        <div class="message">{{ message }}</div>
+    {% endif %}
+
+</body>
+</html>
