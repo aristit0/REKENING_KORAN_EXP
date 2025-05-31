@@ -18,7 +18,6 @@ PHOENIX_USER = 'cmluser'
 PHOENIX_PASSWORD = 'hwj5GpM8rVgy'
 
 def get_cursor():
-    """Creates a new PhoenixDB connection and cursor on-demand"""
     conn = phoenixdb.connect(
         DATABASE_URL,
         autocommit=True,
@@ -39,6 +38,7 @@ def index():
             acctno = request.form.get("acctno")
             start_date = request.form.get("start_date")
             end_date = request.form.get("end_date")
+            doc_type = request.form.get("type", "PDF").upper()
 
             job_id = int(time.time() * 1000)
             req_date = int(datetime.now().strftime("%Y%m%d"))
@@ -46,11 +46,15 @@ def index():
             cursor = get_cursor()
             cursor.execute("""
                 UPSERT INTO REKENING_KORAN.CRUD 
-                (JOB_ID, NIP, ACCTNO, START_DATE, END_DATE, JOB_STATUS, REQ_DATE)
-                VALUES (?, ?, ?, ?, ?, 'SUBMITTED', ?)
-            """, (job_id, int(nip), int(acctno), int(start_date), int(end_date), req_date))
+                (JOB_ID, NIP, ACCTNO, START_DATE, END_DATE, JOB_STATUS, REQ_DATE, TYPE)
+                VALUES (?, ?, ?, ?, ?, 'SUBMITTED', ?, ?)
+            """, (
+                job_id, int(nip), int(acctno),
+                int(start_date), int(end_date),
+                req_date, doc_type
+            ))
 
-            message = f"NIP {nip} successfully requested document. Your job ID is {job_id}."
+            message = f"NIP {nip} successfully requested document ({doc_type}). Your job ID is {job_id}."
         except Exception as e:
             message = f"Error: {str(e)}"
 
@@ -65,14 +69,13 @@ def track():
         try:
             cursor = get_cursor()
             cursor.execute("""
-                SELECT JOB_ID, NIP, ACCTNO, START_DATE, END_DATE, JOB_STATUS, LINK_DOWNLOAD
+                SELECT JOB_ID, NIP, ACCTNO, START_DATE, END_DATE, JOB_STATUS, LINK_DOWNLOAD, TYPE
                 FROM REKENING_KORAN.CRUD 
                 WHERE JOB_ID = ?
             """, (int(job_id),))
             results = cursor.fetchall()
-            print("DEBUG: Query results =", results)  # <-- Add this
         except Exception as e:
-            results = [("Error", str(e), "", "", "", "", "")]
+            results = [("Error", str(e), "", "", "", "", "", "")]
 
     return render_template("track.html", results=results)
 

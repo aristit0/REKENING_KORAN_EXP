@@ -21,7 +21,7 @@
             color: #2c3e50;
             text-align: center;
         }
-        input[type="text"] {
+        input, select {
             width: 100%;
             padding: 0.8em;
             margin: 0.5em 0 1.2em;
@@ -67,6 +67,12 @@
 
             <label for="end_date">End Date (YYYYMMDD)</label>
             <input type="text" name="end_date" required>
+
+            <label for="type">Document Type</label>
+            <select name="type" required>
+                <option value="PDF" selected>PDF</option>
+                <option value="CSV">CSV</option>
+            </select>
 
             <button type="submit">Submit Document Request</button>
         </form>

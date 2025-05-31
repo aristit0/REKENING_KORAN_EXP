@@ -10,7 +10,7 @@
             padding: 2em;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
             background: white;
             padding: 2em;
@@ -62,11 +62,6 @@
             color: #27ae60;
             font-weight: bold;
         }
-        .message {
-            margin-top: 1em;
-            color: red;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -74,13 +69,13 @@
         <h2>Track Document Request</h2>
         <form method="GET" action="{{ url_for('track') }}">
             <label for="job_id">Enter Job ID:</label>
-            <input type="text" name="job_id" value="{{ request.args.get('job_id', '') }}" required>
+            <input type="text" name="job_id" required>
             <button type="submit">Track</button>
         </form>
 
         {% if results %}
             {% if results[0][0] == "Error" %}
-                <p class="message">Error: {{ results[0][1] }}</p>
+                <p style="color: red;">Error: {{ results[0][1] }}</p>
             {% else %}
                 <table>
                     <tr>
@@ -89,6 +84,7 @@
                         <th>Account Number</th>
                         <th>Date Range</th>
                         <th>Status</th>
+                        <th>Type</th>
                         <th>Download</th>
                     </tr>
                     {% for row in results %}
@@ -98,9 +94,10 @@
                         <td>{{ row[2] }}</td>
                         <td>{{ row[3] }} - {{ row[4] }}</td>
                         <td>{{ row[5] }}</td>
+                        <td>{{ row[7] }}</td>
                         <td>
                             {% if row|length > 6 and row[5] == 'COMPLETED' and row[6] %}
-                                <a class="download-link" href="{{ row[6] }}" target="_blank">Download PDF</a>
+                                <a class="download-link" href="{{ row[6] }}" target="_blank">Download</a>
                             {% else %}
                                 -
                             {% endif %}
@@ -109,8 +106,6 @@
                     {% endfor %}
                 </table>
             {% endif %}
-        {% elif request.args.get("job_id") %}
-            <p class="message">No job found with that ID.</p>
         {% endif %}
 
         <a class="back-link" href="{{ url_for('index') }}">← Back to Request Form</a>
