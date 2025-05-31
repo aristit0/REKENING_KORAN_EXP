@@ -5,66 +5,79 @@
     <title>Document Request Form</title>
     <style>
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
-            background-color: #f7f9fc;
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f4f6f8;
+            padding: 2em;
         }
-
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
         h2 {
             color: #2c3e50;
+            text-align: center;
         }
-
-        form {
-            margin-bottom: 30px;
-        }
-
         input[type="text"] {
-            padding: 8px;
-            width: 300px;
-            margin-bottom: 10px;
+            width: 100%;
+            padding: 0.8em;
+            margin: 0.5em 0 1.2em;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            display: block;
+            border-radius: 5px;
         }
-
         button {
-            padding: 10px 18px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        button:hover {
+            width: 100%;
             background-color: #2980b9;
+            color: white;
+            padding: 0.8em;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-
+        button:hover {
+            background-color: #1c6ca4;
+        }
         .message {
+            margin-top: 1em;
+            text-align: center;
             color: green;
-            font-weight: bold;
-            margin-top: 15px;
+        }
+        .track-btn {
+            background-color: #27ae60;
+            margin-top: 1em;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Document Request Form</h2>
+        <form method="POST" action="/">
+            <label for="nip">NIP</label>
+            <input type="text" name="nip" required>
 
-    <h2>Request Transaction Document</h2>
+            <label for="acctno">Account Number</label>
+            <input type="text" name="acctno" required>
 
-    <form method="POST" action="/">
-        <input type="text" name="nip" placeholder="NIP" required>
-        <input type="text" name="acctno" placeholder="Account Number" required>
-        <input type="text" name="start_date" placeholder="Start Date (YYYYMMDD)" required>
-        <input type="text" name="end_date" placeholder="End Date (YYYYMMDD)" required>
+            <label for="start_date">Start Date (YYYYMMDD)</label>
+            <input type="text" name="start_date" required>
 
-        <button type="submit">Submit Request</button>
-        <a href="/track"><button type="button">Track Document</button></a>
-    </form>
+            <label for="end_date">End Date (YYYYMMDD)</label>
+            <input type="text" name="end_date" required>
 
-    {% if message %}
-        <div class="message">{{ message }}</div>
-    {% endif %}
+            <button type="submit">Submit Document Request</button>
+        </form>
 
+        <form method="GET" action="{{ url_for('track') }}">
+            <button class="track-btn" type="submit">Track Document Request</button>
+        </form>
+
+        {% if message %}
+            <div class="message">{{ message }}</div>
+        {% endif %}
+    </div>
 </body>
 </html>

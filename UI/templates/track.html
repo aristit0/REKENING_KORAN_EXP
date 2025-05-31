@@ -5,105 +5,108 @@
     <title>Track Document Request</title>
     <style>
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
-            background-color: #f7f9fc;
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f4f6f8;
+            padding: 2em;
         }
-
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
         h2 {
             color: #2c3e50;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
             text-align: center;
         }
-
+        input[type="text"] {
+            width: 100%;
+            padding: 0.8em;
+            margin: 0.5em 0 1.2em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #27ae60;
+            color: white;
+            padding: 0.8em 2em;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            margin-top: 2em;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #dcdcdc;
+        }
+        th, td {
+            padding: 0.8em;
+            text-align: center;
+        }
         th {
-            background-color: #3498db;
-            color: white;
+            background-color: #ecf0f1;
         }
-
-        .back {
-            margin-top: 20px;
+        .back-link {
             display: inline-block;
-            padding: 8px 16px;
-            background-color: #2c3e50;
-            color: white;
+            margin-top: 2em;
             text-decoration: none;
-            border-radius: 4px;
+            color: #2980b9;
         }
-
-        .back:hover {
-            background-color: #1a242f;
-        }
-
         .download-link {
-            color: #2c3e50;
+            color: #27ae60;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h2>Document Request Status</h2>
+    <div class="container">
+        <h2>Track Document Request</h2>
+        <form method="GET" action="{{ url_for('track') }}">
+            <label for="job_id">Enter Job ID:</label>
+            <input type="text" name="job_id" required>
+            <button type="submit">Track</button>
+        </form>
 
-    {% if results and results[0][0] == 'Error' %}
-        <p style="color: red; font-weight: bold;">{{ results[0][1] }}</p>
-    {% elif results %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Job ID</th>
-                    <th>Requestor (NIP)</th>
-                    <th>Account Number</th>
-                    <th>Date Range</th>
-                    <th>Document Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in results %}
-                <tr>
-                    <td>{{ row[0] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }} - {{ row[4] }}</td>
-                    <td>{{ row[5] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        {% for row in results %}
-            {% if row[5] == 'COMPLETED' and row[6] %}
-                <h3 style="margin-top: 30px;">Download</h3>
+        {% if results %}
+            {% if results[0][0] == "Error" %}
+                <p style="color: red;">Error: {{ results[0][1] }}</p>
+            {% else %}
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Job ID</th>
-                            <th>Download Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{ row[0] }}</td>
-                            <td><a class="download-link" href="{{ row[6] }}" target="_blank">Download PDF</a></td>
-                        </tr>
-                    </tbody>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Requester NIP</th>
+                        <th>Account Number</th>
+                        <th>Date Range</th>
+                        <th>Status</th>
+                        <th>Download</th>
+                    </tr>
+                    {% for row in results %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }} - {{ row[4] }}</td>
+                        <td>{{ row[5] }}</td>
+                        <td>
+                            {% if row|length > 6 and row[5] == 'COMPLETED' %}
+                                <a class="download-link" href="{{ row[6] }}" target="_blank">Download PDF</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </table>
             {% endif %}
-        {% endfor %}
+        {% endif %}
 
-    {% else %}
-        <p>No job found with that ID.</p>
-    {% endif %}
-
-    <a class="back" href="/">← Back to Request Form</a>
+        <a class="back-link" href="{{ url_for('index') }}">← Back to Request Form</a>
+    </div>
 </body>
 </html>
