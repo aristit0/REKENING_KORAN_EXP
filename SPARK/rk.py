@@ -8,17 +8,17 @@ from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Frame, KeepTogether
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 import subprocess
 
 # --- Arguments ---
-if len(sys.argv) != 6:
-    print("Usage: generate_report.py <job_id> <nip> <account_number> <start_date_yyyymmdd> <end_date_yyyymmdd>")
+if len(sys.argv) != 7:
+    print("Usage: generate_report.py <job_id> <nip> <account_number> <start_date_yyyymmdd> <end_date_yyyymmdd> <type_document>")
     sys.exit(1)
 
-job_id, nip, account_number, start_date, end_date = sys.argv[1:6]
+job_id, nip, account_number, start_date, end_date, type_document = sys.argv[1:7]
 
 def yyyymmdd_to_julian(date_str):
     return int(datetime.strptime(date_str, "%Y%m%d").strftime("%Y%j"))
@@ -66,25 +66,12 @@ df_selected = df_filtered.selectExpr(
     "concat('Rp. ', format_number(AMT, 2)) as `NOMINAL`"
 )
 
-demography = df_dm.filter(df_dm.CIFNO == 'RIFF012').limit(1).toPandas()
 tx_data = df_selected.toPandas()
 tx_data.insert(0, "NO", range(1, len(tx_data) + 1))
 
 if tx_data.empty:
     print("No data found.")
     sys.exit(0)
-
-# --- Extract customer info ---
-info = {
-    "NAMA LENGKAP": demography.get("NAMA_LENGKAP", ["-"])[0],
-    "TANGGAL LAHIR": demography.get("TANGGAL_LAHIR", ["-"])[0],
-    "ALAMAT": " ".join([
-        demography.get("ALAMAT_ID1", [""])[0],
-        demography.get("ALAMAT_ID2", [""])[0],
-        demography.get("ALAMAT_ID3", [""])[0],
-    ]).strip() or "-",
-    "JENIS PEKERJAAN": demography.get("JENIS_PEKERJAAN", ["-"])[0]
-}
 
 # --- PDF Generator ---
 def create_pdf(path, watermark_text, tx_df, customer_info):
@@ -112,7 +99,18 @@ def create_pdf(path, watermark_text, tx_df, customer_info):
     doc = SimpleDocTemplate(content_buffer, pagesize=letter)
     styles = getSampleStyleSheet()
 
-    # --- Info Section Table ---
+    demography = df_dm.filter(df_dm.CIFNO == 'RIFF012').limit(1).toPandas()
+    info = {
+        "NAMA LENGKAP": demography.get("NAMA_LENGKAP", ["-"])[0],
+        "TANGGAL LAHIR": demography.get("TANGGAL_LAHIR", ["-"])[0],
+        "ALAMAT": " ".join([
+            demography.get("ALAMAT_ID1", [""])[0],
+            demography.get("ALAMAT_ID2", [""])[0],
+            demography.get("ALAMAT_ID3", [""])[0],
+        ]).strip() or "-",
+        "JENIS PEKERJAAN": demography.get("JENIS_PEKERJAAN", ["-"])[0]
+    }
+
     info_table = Table([
         [Paragraph("<b>NAMA LENGKAP:</b> " + info["NAMA LENGKAP"], styles['Normal']),
          Paragraph("<b>ALAMAT:</b> " + info["ALAMAT"], styles['Normal'])],
@@ -127,7 +125,6 @@ def create_pdf(path, watermark_text, tx_df, customer_info):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6)
     ]))
 
-    # --- Transaction Table ---
     table_data = [tx_df.columns.tolist()] + tx_df.values.tolist()
     col_widths = [0.35 * inch] + [1.3 * inch] * (len(tx_df.columns) - 1)
 
@@ -167,7 +164,20 @@ def create_pdf(path, watermark_text, tx_df, customer_info):
 
     subprocess.run(["hdfs", "dfs", "-put", "-f", "/tmp/report.pdf", path], check=True)
 
-# --- Final Output Path ---
-pdf_hdfs_path = f"/data/rk/report_{job_id}_{nip}_{account_number}_{start_date}_{end_date}.pdf"
-create_pdf(pdf_hdfs_path, watermark_text=nip, tx_df=tx_data, customer_info=info)
-print(f"PDF saved to HDFS: {pdf_hdfs_path}")
+def create_csv(path, tx_df):
+    temp_csv = "/tmp/report.csv"
+    tx_df.to_csv(temp_csv, index=False)
+    subprocess.run(["hdfs", "dfs", "-put", "-f", temp_csv, path], check=True)
+
+# --- Dispatch Output ---
+if type_document.upper() == "PDF":
+    final_path = f"/data/rk/report_{job_id}_{nip}_{account_number}_{start_date}_{end_date}.pdf"
+    create_pdf(final_path, watermark_text=nip, tx_df=tx_data, customer_info=None)
+    print(f"PDF saved to HDFS: {final_path}")
+elif type_document.upper() == "CSV":
+    final_path = f"/data/rk/report_{job_id}_{nip}_{account_number}_{start_date}_{end_date}.csv"
+    create_csv(final_path, tx_data)
+    print(f"CSV saved to HDFS: {final_path}")
+else:
+    print("Invalid document type. Please use PDF or CSV.")
+    sys.exit(1)
